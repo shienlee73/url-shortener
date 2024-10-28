@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+            background: #fff;
+        }
+        .container h2 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 15px;
+            text-align: center;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>URL Shortener</h2>
+    <div class="form-group">
+        <label for="url">Enter URL:</label>
+        <input type="url" id="url" placeholder="https://example.com" required>
+    </div>
+    <button onclick="generateShortUrl()">Shorten URL</button>
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    async function generateShortUrl() {
+        const urlInput = document.getElementById('url').value;
+        if (!urlInput) {
+            alert('Please enter a URL');
+            return;
+        }
+
+        try {
+            const response = await fetch('/shorten', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ originalUrl: urlInput, userId: "guest" })
+            });
+
+            if (!response.ok) throw new Error('Failed to shorten the URL');
+
+            const result = await response.json();
+            const shortUrl = `${window.location.origin}/${result.shortUrl}`;
+            document.getElementById('result').innerHTML = `
+                Short URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a>
+            `;
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('result').textContent = 'Error generating short URL. Please try again.';
+        }
+    }
+</script>
+
+</body>
+</html>
