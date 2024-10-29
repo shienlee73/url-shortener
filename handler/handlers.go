@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shienlee73/url-shortener/shortener"
+	"github.com/shienlee73/url-shortener/store"
 )
 
 func (server *Server) Index(c *gin.Context) {
@@ -33,7 +36,22 @@ func (server *Server) CreateShortUrl(c *gin.Context) {
 		return
 	}
 
+	// save to redis
 	err = server.store.SaveUrlMapping(shortUrl, createShortUrlRequest.OriginalUrl, createShortUrlRequest.UserId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// save to bolt
+	err = server.store.SaveToBolt(store.URLMapping{
+		ShortUrl:    shortUrl,
+		OriginalUrl: createShortUrlRequest.OriginalUrl,
+		UserId:      createShortUrlRequest.UserId,
+		CreatedAt:   time.Now(),
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -49,7 +67,24 @@ func (server *Server) CreateShortUrl(c *gin.Context) {
 func (server *Server) HandleShortUrlRedirect(c *gin.Context) {
 	shortUrl := c.Param("shortUrl")
 
+	// HIT: retrieve from redis
 	originalUrl, err := server.store.RetrieveOriginalUrl(shortUrl)
+	if err == nil {
+		fmt.Printf("HIT: %s\n", shortUrl)
+		c.Redirect(http.StatusFound, originalUrl)
+		return
+	}
+
+	// NOT HIT: retrieve from bolt and add it to redis
+	fmt.Printf("NOT HIT: %s\n", shortUrl)
+	urlMapping, err := server.store.RetrieveFromBolt(shortUrl)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	err = server.store.SaveUrlMapping(shortUrl, urlMapping.OriginalUrl, urlMapping.UserId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -57,5 +92,5 @@ func (server *Server) HandleShortUrlRedirect(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, originalUrl)
+	c.Redirect(http.StatusFound, urlMapping.OriginalUrl)
 }

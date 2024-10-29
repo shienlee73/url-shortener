@@ -33,7 +33,6 @@ func (r *RateLimiter) Limit(endpoint string, rateLimitTTL time.Duration, rateLim
 		tokens, err := r.redisClient.Get(c, key).Int64()
 		if err != nil {
 			// Initialize the rate limit for the IP address
-			fmt.Println(rateLimitTokens - 1)
 			r.redisClient.Set(c, key, rateLimitTokens - 1, rateLimitTTL)
 			c.Next()
 			return

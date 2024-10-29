@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/asdine/storm/v3"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,8 +24,14 @@ func init() {
 		panic(fmt.Sprintf("Error init Redis: %v", err))
 	}
 
+	storm, err := storm.Open("url-shortener.db")
+	if err != nil {
+		panic(fmt.Sprintf("Error init BoltDB: %v", err))
+	}
+
 	testStoreService = NewStorageService(
 		redisClient,
+		storm,
 		WithContext(ctx),
 		WithCacheDuration(5*time.Minute),
 	)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/asdine/storm/v3"
 	"github.com/redis/go-redis/v9"
 	"github.com/shienlee73/url-shortener/handler"
 	"github.com/shienlee73/url-shortener/rate_limiter"
@@ -25,10 +26,19 @@ func main() {
 	if err := redisClient.Ping(ctx).Err(); err != nil {
 		panic(fmt.Sprintf("Error init Redis: %v", err))
 	}
+	defer redisClient.Close()
+
+	// bolt
+	storm, err := storm.Open("url-shortener.db")
+	if err != nil {
+		panic(fmt.Sprintf("Error init BoltDB: %v", err))
+	}
+	defer storm.Close()
 
 	// store
 	storageService := store.NewStorageService(
 		redisClient,
+		storm,
 		store.WithContext(ctx),
 		store.WithCacheDuration(5*time.Minute),
 	)
