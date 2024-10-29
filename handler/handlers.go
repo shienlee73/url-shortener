@@ -19,6 +19,12 @@ type CreateShortUrlRequest struct {
 	UserId      string `json:"userId"`
 }
 
+type CustomizeShortUrlRequest struct {
+	OriginalUrl    string `json:"originalUrl"`
+	UserId         string `json:"userId"`
+	CustomShortUrl string `json:"customShortUrl"`
+}
+
 func (server *Server) CreateShortUrl(c *gin.Context) {
 	var createShortUrlRequest CreateShortUrlRequest
 	if err := c.ShouldBindJSON(&createShortUrlRequest); err != nil {
@@ -93,4 +99,43 @@ func (server *Server) HandleShortUrlRedirect(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusFound, urlMapping.OriginalUrl)
+}
+
+func (server *Server) CustomizeShortUrl(c *gin.Context) {
+	var customizeShortUrlRequest CustomizeShortUrlRequest
+	if err := c.ShouldBindJSON(&customizeShortUrlRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	shortUrl := customizeShortUrlRequest.CustomShortUrl
+
+	// save to redis
+	err := server.store.SaveUrlMapping(shortUrl, customizeShortUrlRequest.OriginalUrl, customizeShortUrlRequest.UserId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// save to bolt
+	err = server.store.SaveToBolt(store.URLMapping{
+		ShortUrl:    shortUrl,
+		OriginalUrl: customizeShortUrlRequest.OriginalUrl,
+		UserId:      customizeShortUrlRequest.UserId,
+		CreatedAt:   time.Now(),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"shortUrl": shortUrl,
+	})
 }

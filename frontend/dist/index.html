@@ -71,6 +71,31 @@
       <div class="result" id="result"></div>
     </div>
 
+    <div class="container customize-container">
+      <h2>Customize Short URL</h2>
+      <div class="form-group">
+        <label for="url">Enter URL:</label>
+        <input
+          type="url"
+          id="custom-url"
+          placeholder="https://example.com"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="custom-url">Enter custom short URL:</label>
+        <input
+          type="text"
+          id="custom-short-url"
+          placeholder="e.g. my-short-url"
+        />
+      </div>
+      <button onclick="generateCustomShortUrl()">
+        Generate Custom Short URL
+      </button>
+      <div class="result" id="custom-result"></div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
       async function generateShortUrl() {
@@ -97,6 +122,41 @@
         } catch (error) {
           document.getElementById(
             "result"
+          ).textContent = `Error: ${error.response.data.error}`;
+        }
+      }
+
+      async function generateCustomShortUrl() {
+        const urlInput = document.getElementById("custom-url").value;
+        const customUrlInput = document.getElementById("custom-short-url").value;
+
+        if (!urlInput) {
+          alert("Please enter a URL");
+          return;
+        }
+
+        if (!customUrlInput) {
+          alert("Please enter a custom short URL");
+          return;
+        }
+
+        try {
+          const response = await axios.post(
+            "/customize",
+            { originalUrl: urlInput, customShortUrl: customUrlInput, userId: "guest" },
+            {
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+
+          const result = response.data;
+          const shortUrl = `${window.location.origin}/${result.shortUrl}`;
+          document.getElementById(
+            "custom-result"
+          ).innerHTML = `Custom Short URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
+        } catch (error) {
+          document.getElementById(
+            "custom-result"
           ).textContent = `Error: ${error.response.data.error}`;
         }
       }

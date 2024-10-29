@@ -40,6 +40,7 @@ func (server *Server) setupRoutes() {
 
 	r.GET("/", server.Index)
 	r.POST("/shorten", server.rateLimiter.Limit("shorten", time.Minute, 5), server.CreateShortUrl)
+	r.POST("/customize", server.rateLimiter.Limit("customize", time.Minute, 5), server.CustomizeShortUrl)
 	r.GET("/:shortUrl", server.rateLimiter.Limit("/:shortUrl", time.Minute, 10), server.HandleShortUrlRedirect)
 
 	server.router = r
