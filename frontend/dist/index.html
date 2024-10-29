@@ -70,6 +70,7 @@
     <div class="result" id="result"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
     async function generateShortUrl() {
         const urlInput = document.getElementById('url').value;
@@ -79,22 +80,17 @@
         }
 
         try {
-            const response = await fetch('/shorten', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ originalUrl: urlInput, userId: "guest" })
+            const response = await axios.post('/shorten', { originalUrl: urlInput, userId: "guest" }, {
+                headers: { 'Content-Type': 'application/json' }
             });
 
-            if (!response.ok) throw new Error('Failed to shorten the URL');
-
-            const result = await response.json();
+            const result = response.data;
             const shortUrl = `${window.location.origin}/${result.shortUrl}`;
             document.getElementById('result').innerHTML = `
                 Short URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a>
             `;
         } catch (error) {
-            console.error('Error:', error);
-            document.getElementById('result').textContent = 'Error generating short URL. Please try again.';
+            document.getElementById('result').textContent = `Error: ${error.response.data.error}`;
         }
     }
 </script>

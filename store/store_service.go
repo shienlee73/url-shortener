@@ -27,9 +27,11 @@ func WithCacheDuration(duration time.Duration) func(*StorageService) {
 }
 
 func NewStorageService(redisClient *redis.Client, options ...func(*StorageService)) *StorageService {
-	storageService := &StorageService{}
-
-	storageService.redisClient = redisClient
+	storageService := &StorageService{
+		redisClient: redisClient,
+		ctx:         context.Background(),
+		CacheDuration: 5 * time.Minute,
+	}
 
 	for _, option := range options {
 		option(storageService)

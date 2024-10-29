@@ -8,6 +8,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/shienlee73/url-shortener/handler"
+	"github.com/shienlee73/url-shortener/rate_limiter"
 	"github.com/shienlee73/url-shortener/store"
 )
 
@@ -32,8 +33,13 @@ func main() {
 		store.WithCacheDuration(5*time.Minute),
 	)
 
+	// rate limiter
+	rateLimiter := rate_limiter.NewRateLimiter(
+		redisClient,
+	)
+
 	// server
-	server := handler.NewServer(storageService)
+	server := handler.NewServer(storageService, rateLimiter)
 	if err := server.Start(fmt.Sprintf("%s:%d", addr, port)); err != nil {
 		panic(err)
 	}
