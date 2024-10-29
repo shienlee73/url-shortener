@@ -32,7 +32,7 @@ func (server *Server) setupRoutes() {
 
     r.StaticFS("/url-shortener", http.FS(contentStatic))
 
-	// r.GET("/", server.Index)
+	r.GET("/", server.Index)
 	r.POST("/shorten", server.CreateShortUrl)
 	r.GET("/:shortUrl", server.HandleShortUrlRedirect)
 

@@ -8,9 +8,7 @@ import (
 )
 
 func (server *Server) Index(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "Hello URL Shortener!",
-	})
+	c.Redirect(http.StatusFound, "/url-shortener/")
 }
 
 type CreateShortUrlRequest struct {
