@@ -1,100 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>URL Shortener</title>
     <link rel="icon" href="data:," />
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f4f9;
-        }
-        .container {
-            max-width: 400px;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
-            background: #fff;
-        }
-        .container h2 {
-            text-align: center;
-            color: #333;
-        }
-        .form-group {
-            margin: 15px 0;
-        }
-        label {
-            font-weight: bold;
-        }
-        input[type="text"], input[type="url"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            background-color: #4CAF50;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .result {
-            margin-top: 15px;
-            text-align: center;
-            color: #333;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f4f4f9;
+      }
+      .container {
+        max-width: 400px;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        background: #fff;
+      }
+      .container h2 {
+        text-align: center;
+        color: #333;
+      }
+      .form-group {
+        margin: 15px 0;
+      }
+      label {
+        font-weight: bold;
+      }
+      input[type="text"],
+      input[type="url"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        background-color: #4caf50;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .result {
+        margin-top: 15px;
+        text-align: center;
+        color: #333;
+      }
     </style>
-</head>
-<body>
-
-<div class="container">
-    <h2>URL Shortener</h2>
-    <div class="form-group">
+  </head>
+  <body>
+    <div class="container">
+      <h2>URL Shortener</h2>
+      <div class="form-group">
         <label for="url">Enter URL:</label>
-        <input type="url" id="url" placeholder="https://example.com" required>
+        <input type="url" id="url" placeholder="https://example.com" required />
+      </div>
+      <button onclick="generateShortUrl()">Shorten URL</button>
+      <div class="result" id="result"></div>
     </div>
-    <button onclick="generateShortUrl()">Shorten URL</button>
-    <div class="result" id="result"></div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script>
-    async function generateShortUrl() {
-        const urlInput = document.getElementById('url').value;
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      async function generateShortUrl() {
+        const urlInput = document.getElementById("url").value;
         if (!urlInput) {
-            alert('Please enter a URL');
-            return;
+          alert("Please enter a URL");
+          return;
         }
 
         try {
-            const response = await axios.post('/shorten', { originalUrl: urlInput, userId: "guest" }, {
-                headers: { 'Content-Type': 'application/json' }
-            });
+          const response = await axios.post(
+            "/shorten",
+            { originalUrl: urlInput, userId: "guest" },
+            {
+              headers: { "Content-Type": "application/json" },
+            }
+          );
 
-            const result = response.data;
-            const shortUrl = `${window.location.origin}/${result.shortUrl}`;
-            document.getElementById('result').innerHTML = `
+          const result = response.data;
+          const shortUrl = `${window.location.origin}/${result.shortUrl}`;
+          document.getElementById("result").innerHTML = `
                 Short URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a>
             `;
         } catch (error) {
-            document.getElementById('result').textContent = `Error: ${error.response.data.error}`;
+          document.getElementById(
+            "result"
+          ).textContent = `Error: ${error.response.data.error}`;
         }
-    }
-</script>
-
-</body>
+      }
+    </script>
+  </body>
 </html>
