@@ -2,6 +2,10 @@
 
 A simple URL shortener service built using Go and Redis.
 
+## Features
+
+* Rate Limit by IP
+
 ## Getting Started
 
 ### Local
