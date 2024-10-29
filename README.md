@@ -4,7 +4,8 @@ A simple URL shortener service built using Go and Redis.
 
 ## Features
 
-* Rate Limit by IP
+* IP-Based Rate Limiting
+* Persistent Storage with BoltDB
 
 ## Getting Started
 
