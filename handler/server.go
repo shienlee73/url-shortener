@@ -2,8 +2,11 @@ package handler
 
 import (
 	"fmt"
+	"io/fs"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/shienlee73/url-shortener/frontend"
 	"github.com/shienlee73/url-shortener/store"
 )
 
@@ -22,7 +25,12 @@ func NewServer(store *store.StorageService) *Server {
 func (server *Server) setupRoutes() {
 	r := gin.Default()
 
-	r.StaticFile("/", "./frontend/index.html")
+    contentStatic, err := fs.Sub(frontend.Assets(), "dist")
+    if err != nil {
+        panic(err)
+    }
+
+    r.StaticFS("/url-shortener", http.FS(contentStatic))
 
 	// r.GET("/", server.Index)
 	r.POST("/shorten", server.CreateShortUrl)
