@@ -7,6 +7,7 @@ A simple URL shortener service built using Go and Redis.
 * IP-Based Rate Limiting
 * Persistent Storage with BoltDB
 * Custom Short URLs
+* QR Code Generation
 
 ## Getting Started
 
