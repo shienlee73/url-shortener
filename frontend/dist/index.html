@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>URL Shortener</title>
-    <link rel="icon" href="data:," />
+    <link rel="icon" href="/url-shortener/logo.svg" type="image/svg+xml">
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -96,7 +96,18 @@
       <div class="result" id="custom-result"></div>
     </div>
 
+    <div class="container qr-code-container">
+      <h2>QR Code Generator</h2>
+      <div class="form-group">
+        <label for="url">Enter URL:</label>
+        <input type="url" id="qr-code-url" placeholder="https://example.com" required />
+      </div>
+      <button onclick="generateQRCode()">Generate QR Code</button>
+      <div class="canvas" id="canvas"></div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.8.4/lib/qr-code-styling.min.js"></script>
     <script>
       async function generateShortUrl() {
         const urlInput = document.getElementById("url").value;
@@ -128,7 +139,8 @@
 
       async function generateCustomShortUrl() {
         const urlInput = document.getElementById("custom-url").value;
-        const customUrlInput = document.getElementById("custom-short-url").value;
+        const customUrlInput =
+          document.getElementById("custom-short-url").value;
 
         if (!urlInput) {
           alert("Please enter a URL");
@@ -143,7 +155,11 @@
         try {
           const response = await axios.post(
             "/customize",
-            { originalUrl: urlInput, customShortUrl: customUrlInput, userId: "guest" },
+            {
+              originalUrl: urlInput,
+              customShortUrl: customUrlInput,
+              userId: "guest",
+            },
             {
               headers: { "Content-Type": "application/json" },
             }
@@ -159,6 +175,33 @@
             "custom-result"
           ).textContent = `Error: ${error.response.data.error}`;
         }
+      }
+
+      function generateQRCode() {
+        const canvas = document.getElementById("canvas");
+        canvas.innerHTML = "";
+
+        const urlInput = document.getElementById("qr-code-url").value;
+        const qrCode = new QRCodeStyling({
+          width: 300,
+          height: 300,
+          type: "svg",
+          data: urlInput,
+          image: "/url-shortener/logo.svg",
+          dotsOptions: {
+            color: "#1E90FF",
+            type: "rounded",
+          },
+          backgroundOptions: {
+            color: "#e9ebee",
+          },
+          imageOptions: {
+            crossOrigin: "anonymous",
+            margin: 5,
+          },
+        });
+
+        qrCode.append(canvas);
       }
     </script>
   </body>
