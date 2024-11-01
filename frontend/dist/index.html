@@ -177,11 +177,10 @@
         }
       }
 
-      function generateQRCode() {
+      function generateQRCode(url) {
         const canvas = document.getElementById("canvas");
         canvas.innerHTML = "";
-
-        const urlInput = document.getElementById("qr-code-url").value;
+        const urlInput = url || document.getElementById("qr-code-url").value;
         const qrCode = new QRCodeStyling({
           width: 300,
           height: 300,
@@ -190,19 +189,21 @@
           image: "/url-shortener/logo.svg",
           dotsOptions: {
             color: "#1E90FF",
-            type: "rounded",
+            type: "extra-rounded",
           },
           backgroundOptions: {
             color: "#e9ebee",
           },
           imageOptions: {
             crossOrigin: "anonymous",
+            imageSize: 0.4,
             margin: 5,
           },
         });
 
         qrCode.append(canvas);
       }
+      generateQRCode(window.location.origin);
     </script>
   </body>
 </html>
