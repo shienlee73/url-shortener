@@ -6,8 +6,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/shienlee73/url-shortener/shortener"
 	"github.com/shienlee73/url-shortener/store"
+	"github.com/shienlee73/url-shortener/token"
 )
 
 func (server *Server) Index(c *gin.Context) {
@@ -16,12 +18,10 @@ func (server *Server) Index(c *gin.Context) {
 
 type CreateShortUrlRequest struct {
 	OriginalUrl string `json:"originalUrl"`
-	UserId      string `json:"userId"`
 }
 
 type CustomizeShortUrlRequest struct {
 	OriginalUrl    string `json:"originalUrl"`
-	UserId         string `json:"userId"`
 	CustomShortUrl string `json:"customShortUrl"`
 }
 
@@ -34,7 +34,9 @@ func (server *Server) CreateShortUrl(c *gin.Context) {
 		return
 	}
 
-	shortUrl, err := shortener.GenerateShortUrl(createShortUrlRequest.OriginalUrl, createShortUrlRequest.UserId)
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	shortUrl, err := shortener.GenerateShortUrl(createShortUrlRequest.OriginalUrl, authPayload.UserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -43,7 +45,7 @@ func (server *Server) CreateShortUrl(c *gin.Context) {
 	}
 
 	// save to redis
-	err = server.store.SaveUrlMapping(shortUrl, createShortUrlRequest.OriginalUrl, createShortUrlRequest.UserId)
+	err = server.store.SaveUrlMapping(shortUrl, createShortUrlRequest.OriginalUrl, authPayload.UserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -53,9 +55,10 @@ func (server *Server) CreateShortUrl(c *gin.Context) {
 
 	// save to bolt
 	err = server.store.CreateURLMapping(store.URLMapping{
+		ID:          uuid.NewString(),
 		ShortUrl:    shortUrl,
 		OriginalUrl: createShortUrlRequest.OriginalUrl,
-		UserId:      createShortUrlRequest.UserId,
+		UserId:      authPayload.UserID,
 		CreatedAt:   time.Now(),
 	})
 	if err != nil {
@@ -112,8 +115,10 @@ func (server *Server) CustomizeShortUrl(c *gin.Context) {
 
 	shortUrl := customizeShortUrlRequest.CustomShortUrl
 
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	// save to redis
-	err := server.store.SaveUrlMapping(shortUrl, customizeShortUrlRequest.OriginalUrl, customizeShortUrlRequest.UserId)
+	err := server.store.SaveUrlMapping(shortUrl, customizeShortUrlRequest.OriginalUrl, authPayload.UserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -125,7 +130,7 @@ func (server *Server) CustomizeShortUrl(c *gin.Context) {
 	err = server.store.CreateURLMapping(store.URLMapping{
 		ShortUrl:    shortUrl,
 		OriginalUrl: customizeShortUrlRequest.OriginalUrl,
-		UserId:      customizeShortUrlRequest.UserId,
+		UserId:      authPayload.UserID,
 		CreatedAt:   time.Now(),
 	})
 	if err != nil {
@@ -137,5 +142,19 @@ func (server *Server) CustomizeShortUrl(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"shortUrl": shortUrl,
+	})
+}
+
+func (server *Server) GetURLMappings(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	urlMappings, err := server.store.RetrieveURLMappings(authPayload.UserID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"urlMappings": urlMappings,
 	})
 }

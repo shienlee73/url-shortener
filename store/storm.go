@@ -5,7 +5,13 @@ import (
 )
 
 func (s *StorageService) CreateURLMapping(urlMapping URLMapping) error {
-	err := s.storm.Save(&urlMapping)
+	retrieved, err := s.RetrieveURLMapping(urlMapping.ShortUrl)
+	if err == nil {
+		return fmt.Errorf("short url already exists: %s", retrieved.ShortUrl)
+	}
+
+	err = s.storm.Save(&urlMapping)
+	fmt.Println(urlMapping)
 	if err != nil {
 		return fmt.Errorf("failed to save url mapping: %v", err)
 	}
@@ -19,6 +25,15 @@ func (s *StorageService) RetrieveURLMapping(shortUrl string) (URLMapping, error)
 		return URLMapping{}, fmt.Errorf("failed to retrieve original url: %v", err)
 	}
 	return urlMapping, nil
+}
+
+func (s *StorageService) RetrieveURLMappings(userID string) ([]URLMapping, error) {
+	var urlMappings []URLMapping
+	err := s.storm.Find("UserId", userID, &urlMappings)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve url mappings: %v", err)
+	}
+	return urlMappings, nil
 }
 
 func (s *StorageService) CreateUser(user User) error {

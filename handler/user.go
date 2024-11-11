@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/shienlee73/url-shortener/store"
 	"github.com/shienlee73/url-shortener/util"
 )
@@ -41,6 +42,7 @@ func (server *Server) CreateUser(c *gin.Context) {
 	}
 
 	user := store.User{
+		ID:             uuid.NewString(),
 		Username:       createdUserRequest.Username,
 		HashedPassword: hashedPassword,
 		CreatedAt:      time.Now(),
@@ -74,7 +76,6 @@ func (server *Server) LoginUser(c *gin.Context) {
 		return
 	}
 
-
 	var loginUserRequest UserRequest
 	if err := c.ShouldBindJSON(&loginUserRequest); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
@@ -93,13 +94,13 @@ func (server *Server) LoginUser(c *gin.Context) {
 		return
 	}
 
-	accessToken, accessPayload, err := server.tokenMaker.CreateToken(user.Username, server.config.AccessTokenDuration)
+	accessToken, accessPayload, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.config.AccessTokenDuration)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(user.Username, server.config.RefreshTokenDuration)
+	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(user.ID, user.Username, server.config.RefreshTokenDuration)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
