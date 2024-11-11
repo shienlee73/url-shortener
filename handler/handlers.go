@@ -16,6 +16,10 @@ func (server *Server) Index(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/url-shortener/")
 }
 
+func (server *Server) LoginPage(c *gin.Context) {
+	c.Redirect(http.StatusFound, "/url-shortener/login.html")
+}
+
 type CreateShortUrlRequest struct {
 	OriginalUrl string `json:"originalUrl"`
 }

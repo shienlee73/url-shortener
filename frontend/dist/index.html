@@ -62,6 +62,11 @@
   </head>
   <body>
     <div class="container">
+      <a href="/url-shortener/login.html"><button>Login/Signup</button></a>
+      <button onclick="logout()">Logout</button>
+    </div>
+
+    <div class="container">
       <h2>URL Shortener</h2>
       <div class="form-group">
         <label for="url">Enter URL:</label>
@@ -204,6 +209,15 @@
         qrCode.append(canvas);
       }
       generateQRCode(window.location.origin);
+
+      async function logout() {
+        try {
+          const response = await axios.get("/logout");
+          window.location.href = "/";
+        } catch (error) {
+          console.error(error);
+        }
+      }
     </script>
   </body>
 </html>

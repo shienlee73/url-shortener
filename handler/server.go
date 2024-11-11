@@ -45,6 +45,7 @@ func (server *Server) setupRoutes() {
 	r.StaticFS("/url-shortener", http.FS(contentStatic))
 
 	r.GET("/", server.Index)
+	r.GET("/login", server.LoginPage)
 	r.POST("/login", server.LoginUser)
 	r.GET("/logout", server.LogoutUser)
 	r.POST("/signup", server.CreateUser)

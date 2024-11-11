@@ -35,6 +35,11 @@ func (server *Server) CreateUser(c *gin.Context) {
 		return
 	}
 
+	if createdUserRequest.Username == "" || createdUserRequest.Password == "" {
+		c.JSON(http.StatusBadRequest, errorResponse(errors.New("username and password are required")))
+		return
+	}
+
 	hashedPassword, err := util.HashPassword(createdUserRequest.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -81,6 +86,11 @@ func (server *Server) LoginUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
+	if loginUserRequest.Username == "" || loginUserRequest.Password == "" {
+		c.JSON(http.StatusBadRequest, errorResponse(errors.New("username and password are required")))
+		return
+	}	
 
 	user, err := server.store.RetrieveUser(loginUserRequest.Username)
 	if err != nil {

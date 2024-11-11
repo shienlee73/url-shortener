@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>URL Shortener</title>
+    <link rel="icon" href="/url-shortener/logo.svg" type="image/svg+xml" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f4f4f9;
+      }
+      .container {
+        max-width: 400px;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        background: #fff;
+      }
+      .container h2 {
+        text-align: center;
+        color: #333;
+      }
+      .form-group {
+        margin: 15px 0;
+      }
+      label {
+        font-weight: bold;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        background-color: #4caf50;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .result {
+        margin-top: 15px;
+        text-align: center;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Login / Signup</h2>
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" required />
+      </div>
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" required />
+      </div>
+      <button style="display: inline-block; width: 49%;" onclick="login()">Login</button>
+      <button style="display: inline-block; width: 49%;" onclick="signup()">Signup</button>
+      <div class="result" id="result"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      async function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        try {
+          const response = await axios.post(
+            "/login",
+            { username, password },
+            {
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+          const result = response.data;
+          window.location.href = "/";
+          localStorage.setItem("username", result.user.username);
+        } catch (error) {
+          document.getElementById(
+            "result"
+          ).textContent = `Error: ${error.response.data.error}`;
+        }
+      }
+
+      async function signup() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        try {
+          const response = await axios.post(
+            "/signup",
+            { username, password },
+            {
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+          const result = response.data;
+          window.location.href = "/";
+        } catch (error) {
+          document.getElementById(
+            "result"
+          ).textContent = `Error: ${error.response.data.error}`;
+        }
+      }
+    </script>
+  </body>
+</html>
