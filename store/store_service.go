@@ -17,9 +17,9 @@ type StorageService struct {
 
 func NewStorageService(redisClient *redis.Client, storm *storm.DB, options ...func(*StorageService)) *StorageService {
 	storageService := &StorageService{
-		redisClient: redisClient,
-		storm:       storm,
-		ctx:         context.Background(),
+		redisClient:   redisClient,
+		storm:         storm,
+		ctx:           context.Background(),
 		CacheDuration: 5 * time.Minute,
 	}
 

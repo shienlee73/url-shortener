@@ -11,10 +11,18 @@ import (
 	"github.com/shienlee73/url-shortener/handler"
 	"github.com/shienlee73/url-shortener/rate_limiter"
 	"github.com/shienlee73/url-shortener/store"
+	"github.com/shienlee73/url-shortener/token"
+	"github.com/shienlee73/url-shortener/util"
 )
 
 func main() {
 	addr, port, redisAddr, redisPassword := parseFlags()
+
+	// config
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		panic(fmt.Sprintf("Error load config: %v", err))
+	}
 
 	// redis
 	redisClient := redis.NewClient(&redis.Options{
@@ -48,8 +56,14 @@ func main() {
 		redisClient,
 	)
 
+	// token maker
+	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
+	if err != nil {
+		panic(err)
+	}
+
 	// server
-	server := handler.NewServer(storageService, rateLimiter)
+	server := handler.NewServer(storageService, rateLimiter, tokenMaker, config)
 	if err := server.Start(fmt.Sprintf("%s:%d", addr, port)); err != nil {
 		panic(err)
 	}

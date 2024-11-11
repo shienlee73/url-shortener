@@ -52,7 +52,7 @@ func (server *Server) CreateShortUrl(c *gin.Context) {
 	}
 
 	// save to bolt
-	err = server.store.SaveToBolt(store.URLMapping{
+	err = server.store.CreateURLMapping(store.URLMapping{
 		ShortUrl:    shortUrl,
 		OriginalUrl: createShortUrlRequest.OriginalUrl,
 		UserId:      createShortUrlRequest.UserId,
@@ -83,7 +83,7 @@ func (server *Server) HandleShortUrlRedirect(c *gin.Context) {
 
 	// NOT HIT: retrieve from bolt and add it to redis
 	fmt.Printf("NOT HIT: %s\n", shortUrl)
-	urlMapping, err := server.store.RetrieveFromBolt(shortUrl)
+	urlMapping, err := server.store.RetrieveURLMapping(shortUrl)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -122,7 +122,7 @@ func (server *Server) CustomizeShortUrl(c *gin.Context) {
 	}
 
 	// save to bolt
-	err = server.store.SaveToBolt(store.URLMapping{
+	err = server.store.CreateURLMapping(store.URLMapping{
 		ShortUrl:    shortUrl,
 		OriginalUrl: customizeShortUrlRequest.OriginalUrl,
 		UserId:      customizeShortUrlRequest.UserId,
