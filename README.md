@@ -8,6 +8,7 @@ A simple URL shortener service built using Go and Redis.
 * Persistent Storage with BoltDB
 * Custom Short URLs
 * QR Code Generation
+* User Authentication and Management
 
 ## Getting Started
 
