@@ -46,9 +46,9 @@ func TestInsertionAndRetrieval(t *testing.T) {
 	userId := "e0dba740-fc4b-4977-872c-d360239e6b1a"
 	shortURL := "Jsz4k57oAX"
 
-	testStoreService.SaveUrlMapping(shortURL, originalUrl, userId)
-	retrievedUrl, err := testStoreService.RetrieveOriginalUrl(shortURL)
+	testStoreService.SaveUrlMappingToRedis(shortURL, originalUrl, userId)
+	urlMappingCache, err := testStoreService.RetrieveUrlMappingFromRedis(shortURL)
 
 	assert.NoError(t, err)
-	assert.Equal(t, originalUrl, retrievedUrl)
+	assert.Equal(t, originalUrl, urlMappingCache["originalUrl"])
 }

@@ -41,6 +41,7 @@ func (server *Server) CreateShortUrl(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	shortUrl, err := shortener.GenerateShortUrl(createShortUrlRequest.OriginalUrl, authPayload.UserID)
+	shortUrlId := uuid.NewString()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -49,7 +50,7 @@ func (server *Server) CreateShortUrl(c *gin.Context) {
 	}
 
 	// save to redis
-	err = server.store.SaveUrlMapping(shortUrl, createShortUrlRequest.OriginalUrl, authPayload.UserID)
+	err = server.store.SaveUrlMappingToRedis(shortUrl, createShortUrlRequest.OriginalUrl, shortUrlId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -59,7 +60,7 @@ func (server *Server) CreateShortUrl(c *gin.Context) {
 
 	// save to bolt
 	err = server.store.CreateURLMapping(store.URLMapping{
-		ID:          uuid.NewString(),
+		ID:          shortUrlId,
 		ShortUrl:    shortUrl,
 		OriginalUrl: createShortUrlRequest.OriginalUrl,
 		UserId:      authPayload.UserID,
@@ -80,28 +81,42 @@ func (server *Server) CreateShortUrl(c *gin.Context) {
 func (server *Server) HandleShortUrlRedirect(c *gin.Context) {
 	shortUrl := c.Param("shortUrl")
 
+	var urlMapping store.URLMapping
+	var err error
+
 	// HIT: retrieve from redis
-	originalUrl, err := server.store.RetrieveOriginalUrl(shortUrl)
+	urlMappingCache, err := server.store.RetrieveUrlMappingFromRedis(shortUrl)
 	if err == nil {
-		fmt.Printf("HIT: %s\n", shortUrl)
-		c.Redirect(http.StatusFound, originalUrl)
-		return
+		fmt.Println(urlMappingCache)
+		fmt.Println("HIT:", shortUrl)
+		urlMapping.ID = urlMappingCache["urlMappingId"]
+		urlMapping.OriginalUrl = urlMappingCache["originalUrl"]
+	} else {
+		// NOT HIT: retrieve from bolt and add it to redis
+		fmt.Println("NOT HIT:", shortUrl)
+		urlMapping, err = server.store.RetrieveURLMapping(shortUrl)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+		err = server.store.SaveUrlMappingToRedis(shortUrl, urlMapping.OriginalUrl, urlMapping.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
 	}
 
-	// NOT HIT: retrieve from bolt and add it to redis
-	fmt.Printf("NOT HIT: %s\n", shortUrl)
-	urlMapping, err := server.store.RetrieveURLMapping(shortUrl)
+	// create click stat
+	err = server.store.CreateClickStat(store.ClickStat{
+		ID:           uuid.NewString(),
+		UrlMappingId: urlMapping.ID,
+		ClickTime:    time.Now(),
+		IpAddress:    c.ClientIP(),
+		Referer:      c.Request.Referer(),
+		UserAgent:    c.Request.UserAgent(),
+	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-	err = server.store.SaveUrlMapping(shortUrl, urlMapping.OriginalUrl, urlMapping.UserId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
@@ -122,7 +137,7 @@ func (server *Server) CustomizeShortUrl(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	// save to redis
-	err := server.store.SaveUrlMapping(shortUrl, customizeShortUrlRequest.OriginalUrl, authPayload.UserID)
+	err := server.store.SaveUrlMappingToRedis(shortUrl, customizeShortUrlRequest.OriginalUrl, authPayload.UserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),

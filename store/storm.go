@@ -77,3 +77,20 @@ func (s *StorageService) DeleteSession(sessionID string) error {
 	}
 	return nil
 }
+
+func (s *StorageService) CreateClickStat(clickStat ClickStat) error {
+	err := s.storm.Save(&clickStat)
+	if err != nil {
+		return fmt.Errorf("failed to save click stat: %v", err)
+	}
+	return nil
+}
+
+func (s *StorageService) RetrieveClickStats(shortUrlID string) ([]ClickStat, error) {
+	var clickStats []ClickStat
+	err := s.storm.Find("ShortUrlId", shortUrlID, &clickStats)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve click stats: %v", err)
+	}
+	return clickStats, nil
+}

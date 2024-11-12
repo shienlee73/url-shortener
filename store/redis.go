@@ -18,18 +18,25 @@ func WithCacheDuration(duration time.Duration) func(*StorageService) {
 	}
 }
 
-func (s *StorageService) SaveUrlMapping(shortUrl string, originalUrl string, userId string) error {
-	err := s.redisClient.Set(s.ctx, shortUrl, originalUrl, s.CacheDuration).Err()
+func (s *StorageService) SaveUrlMappingToRedis(shortUrl string, originalUrl string, urlMappingId string) error {
+	err := s.redisClient.HSet(s.ctx, shortUrl, "urlMappingId", urlMappingId, "originalUrl", originalUrl).Err()
+	if err != nil {
+		return fmt.Errorf("failed to save url mapping: %v", err)
+	}
+	err = s.redisClient.Expire(s.ctx, shortUrl, s.CacheDuration).Err()
 	if err != nil {
 		return fmt.Errorf("failed to save url mapping: %v", err)
 	}
 	return nil
 }
 
-func (s *StorageService) RetrieveOriginalUrl(shortUrl string) (string, error) {
-	result, err := s.redisClient.Get(s.ctx, shortUrl).Result()
+func (s *StorageService) RetrieveUrlMappingFromRedis(shortUrl string) (map[string]string, error) {
+	result, err := s.redisClient.HGetAll(s.ctx, shortUrl).Result()
 	if err != nil {
-		return "", fmt.Errorf("failed to retrieve original url: %v", err)
+		return nil, fmt.Errorf("failed to retrieve url mapping: %v", err)
 	}
+	if len(result) == 0 {
+        return nil, fmt.Errorf("no mapping found for shortUrl: %s", shortUrl)
+    }
 	return result, nil
 }

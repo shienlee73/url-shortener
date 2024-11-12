@@ -17,6 +17,15 @@ type URLMapping struct {
 	CreatedAt   time.Time `json:"created_at" storm:"index"`
 }
 
+type ClickStat struct {
+	ID           string    `json:"id" storm:"id"`
+	UrlMappingId string    `json:"url_mapping_id" storm:"index"`
+	ClickTime    time.Time `json:"click_time" storm:"index"`
+	IpAddress    string    `json:"ip_address" storm:"index"`
+	Referer      string    `json:"referer" storm:"index"`
+	UserAgent    string    `json:"user_agent" storm:"index"`
+}
+
 type Session struct {
 	ID           string    `json:"id" storm:"id"`
 	Username     string    `json:"username" storm:"index"`
