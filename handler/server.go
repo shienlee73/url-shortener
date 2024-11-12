@@ -51,7 +51,7 @@ func (server *Server) setupRoutes() {
 	r.POST("/signup", server.CreateUser)
 	r.POST("/shorten", server.rateLimiter.Limit("shorten", time.Minute, 5), authMiddleware(server.tokenMaker), server.CreateShortUrl)
 	r.POST("/customize", server.rateLimiter.Limit("customize", time.Minute, 5), authMiddleware(server.tokenMaker), server.CustomizeShortUrl)
-	r.GET("/:shortUrl", server.rateLimiter.Limit("/:shortUrl", time.Minute, 10), authMiddleware(server.tokenMaker), server.HandleShortUrlRedirect)
+	r.GET("/:shortUrl", server.rateLimiter.Limit("/:shortUrl", time.Minute, 10), server.HandleShortUrlRedirect)
 	r.GET("/urlmappings", authMiddleware(server.tokenMaker), server.GetURLMappings)
 
 	server.router = r

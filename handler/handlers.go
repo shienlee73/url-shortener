@@ -132,6 +132,7 @@ func (server *Server) CustomizeShortUrl(c *gin.Context) {
 
 	// save to bolt
 	err = server.store.CreateURLMapping(store.URLMapping{
+		ID:          uuid.NewString(),
 		ShortUrl:    shortUrl,
 		OriginalUrl: customizeShortUrlRequest.OriginalUrl,
 		UserId:      authPayload.UserID,
