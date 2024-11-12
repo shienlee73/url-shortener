@@ -141,9 +141,9 @@ func (server *Server) LoginUser(c *gin.Context) {
 		User:                  NewUserResponse(user),
 	}
 
-	c.SetCookie("session_id", session.ID, int(time.Until(refreshPayload.ExpiresAt.Time).Seconds()), "/", "", false, true)
-	c.SetCookie("access_token", accessToken, int(time.Until(accessPayload.ExpiresAt.Time).Seconds()), "/", "", false, true)
-	c.SetCookie("refresh_token", refreshToken, int(time.Until(refreshPayload.ExpiresAt.Time).Seconds()), "/", "", false, true)
+	// c.SetCookie("session_id", session.ID, int(time.Until(refreshPayload.ExpiresAt.Time).Seconds()), "/", "", false, true)
+	// c.SetCookie("access_token", accessToken, int(time.Until(accessPayload.ExpiresAt.Time).Seconds()), "/", "", false, true)
+	// c.SetCookie("refresh_token", refreshToken, int(time.Until(refreshPayload.ExpiresAt.Time).Seconds()), "/", "", false, true)
 
 	c.JSON(http.StatusOK, res)
 }

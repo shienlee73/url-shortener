@@ -91,6 +91,9 @@
           const result = response.data;
           window.location.href = "/";
           localStorage.setItem("username", result.user.username);
+          localStorage.setItem("access_token", result.access_token);
+          localStorage.setItem("refresh_token", result.refresh_token);
+          localStorage.setItem("session_id", result.session_id);
         } catch (error) {
           document.getElementById(
             "result"
