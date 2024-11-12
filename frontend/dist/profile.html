@@ -83,7 +83,7 @@
             const urlElement = document.createElement("div");
             urlElement.innerHTML = `
               <p>ID: ${url.id}</p>
-              <p>Short URL: <a href="${url.short_url}" target="_blank">${url.short_url}</a></p>
+              <p>Short URL: <a href="${window.location.origin}/${url.short_url}" target="_blank">${url.short_url}</a></p>
               <p>Original URL: <a href="${url.original_url}" target="_blank">${url.original_url}</a></p>
               <hr/>
             `;
